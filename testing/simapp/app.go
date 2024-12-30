@@ -229,6 +229,12 @@ type SimApp struct {
 	configurator module.Configurator
 }
 
+type MockErc20Keeper struct{}
+
+func (m *MockErc20Keeper) GetAllStakingAssets(ctx sdk.Context) []stakingtypes.Erc20Asset {
+	return []stakingtypes.Erc20Asset{}
+}
+
 func init() {
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -310,7 +316,7 @@ func NewSimApp(
 		panic(err)
 	}
 
-	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey, banktypes.TStoreKey)
 	memKeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey, ibcmock.MemStoreKey)
 
 	app := &SimApp{
@@ -364,8 +370,9 @@ func NewSimApp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		logger,
 	)
+
 	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]), app.AccountKeeper, app.BankKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(), authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr), authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+		appCodec, runtime.NewKVStoreService(keys[stakingtypes.StoreKey]), app.AccountKeeper, app.BankKeeper, &MockErc20Keeper{}, authtypes.NewModuleAddress(govtypes.ModuleName).String(), authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr), authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
 	app.MintKeeper = mintkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(keys[minttypes.StoreKey]), app.StakingKeeper, app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
@@ -667,6 +674,7 @@ func NewSimApp(
 		ibcfeetypes.ModuleName,
 		ibcmock.ModuleName,
 		group.ModuleName,
+		banktypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are

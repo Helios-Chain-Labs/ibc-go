@@ -7,6 +7,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
@@ -29,9 +30,9 @@ func TestChangeValSet(t *testing.T) {
 	require.NoError(t, err)
 
 	chainA.GetSimApp().StakingKeeper.Delegate(chainA.GetContext(), chainA.SenderAccounts[1].SenderAccount.GetAddress(), //nolint:errcheck // ignore error for test
-		amount, types.Unbonded, val[1], true)
+		amount, sdk.DefaultBondDenom, types.Unbonded, val[1], true)
 	chainA.GetSimApp().StakingKeeper.Delegate(chainA.GetContext(), chainA.SenderAccounts[3].SenderAccount.GetAddress(), //nolint:errcheck // ignore error for test
-		amount2, types.Unbonded, val[3], true)
+		amount2, sdk.DefaultBondDenom, types.Unbonded, val[3], true)
 
 	coord.CommitBlock(chainA)
 
